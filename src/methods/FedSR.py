@@ -48,6 +48,9 @@ class Model(Base):
                 r_sigma = r_sigma_softplus[y]
                 z_mu_scaled = z_mu*self.C
                 z_sigma_scaled = z_sigma*self.C
+                
+                #we measure the dissimilarity between the distributions of the latent variable and the target variable,
+                #by comparing both the mean and standard deviation information
                 regCMI = torch.log(r_sigma) - torch.log(z_sigma_scaled) + \
                         (z_sigma_scaled**2+(z_mu_scaled-r_mu)**2)/(2*r_sigma**2) - 0.5
                 regCMI = regCMI.sum(1).mean()
