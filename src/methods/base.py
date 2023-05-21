@@ -66,10 +66,20 @@ class Base(nn.Module):
         if not self.probabilistic:
             return self.net(x)
         else:
+            #The network is expected to produce a tensor containing the parameters of the Gaussian distribution,
+            #where the first self.z_dim elements represent the mean (z_mu) and the remaining elements represent the logarithm of the standard deviation (z_sigma).
             z_params = self.net(x)
             z_mu = z_params[:,:self.z_dim]
+            
+            #Softplus is an activation function; It can be viewed as a smooth version of ReLU.
+            #Here, the softplus activation function (F.softplus) is applied to the remaining elements of z_params, 
+            #which represent the logarithm of the standard deviation (z_sigma). The softplus function ensures that the standard deviation remains positive.
             z_sigma = F.softplus(z_params[:,self.z_dim:])
+            
+            #creates an instance of a gaussian distribution whose dimensions are independent and with mean z_mu, standard dev: sigma
             z_dist = distributions.Independent(distributions.normal.Normal(z_mu,z_sigma),1)
+            
+            #samples from the resulting distribution to obtain num_samples samples of dimension self.z_dim
             z = z_dist.rsample([num_samples]).view([-1,self.z_dim])
             
             if return_dist:
